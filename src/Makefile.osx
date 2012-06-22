@@ -1,0 +1,42 @@
+GCC = /usr/bin/gcc-4.2
+GPP = g++
+LD = g++
+
+SONAME=gd2
+OBJ=$(SONAME).o base64.o
+
+JPEG=jpeg-8b
+JPEG_ARCHIVE=libjpeg8_8b.orig.tar.gz
+
+GD2 = libgd2_2.0.36~rc1~dfsg.orig
+GD2_ARCHIVE=libgd2_2.0.36~rc1~dfsg.orig.tar.gz
+
+V8LIB_DIR=/usr/local/silkjs/src/v8
+
+V8LIB_DIR=/usr/local/silkjs/src/v8
+
+V8=	$(V8LIB_DIR)/libv8_base.a $(V8LIB_DIR)/libv8_snapshot.a
+
+LOCAL=$(CURDIR)/local
+
+CCFLAGS=-fPIC -I/usr/local/silkjs/src -I$(V8LIB_DIR)/include -I$(LOCAL)/include
+
+.cpp.o:
+	$(GPP) -c $(CCFLAGS) -o $*.o $*.cpp
+
+all:	$(JPEG) $(GD2) $(OBJ)
+	$(LD) -shared -Wl,-install_name,$(SONAME)_module.so -o $(SONAME)_module.so $(OBJ) $(LOCAL)/lib/libjpeg.a $(LOCAL)/lib/libgd.a -L$(V8LIB_DIR) -lv8 -lpng -liconv -L/usr/X11/lib -lfontconfig -lfreetype -lXpm
+
+clean:
+	rm -f *.o *.so
+
+realclean:
+	rm -rf *.o *.so $(JPEG) $(GD2) $(CURDIR)/local
+
+$(JPEG):
+	tar xzvfp $(JPEG_ARCHIVE)
+	cd $(JPEG) && ./configure --prefix=$(CURDIR)/local && make && make install
+
+$(GD2):
+	tar xzvfp $(GD2_ARCHIVE)
+	cd $(GD2) && ./configure --with-jpeg=$(CURDIR)/local --prefix=$(LOCAL) && make && make install
